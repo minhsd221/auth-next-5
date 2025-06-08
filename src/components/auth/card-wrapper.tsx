@@ -23,9 +23,11 @@ export function CardWrapper({
 }: CardWrapperProps) {
   return (
     <Card className="w-[400px] shadow-md">
+
       <CardHeader>
-        <Header label={headerLabel} />
+        <Header label={'$headerLabel'} />
       </CardHeader>
+      
       <CardContent>
         {children}   
       </CardContent>
@@ -35,12 +37,14 @@ export function CardWrapper({
           <Social />
         </CardFooter>
       )}
+
       <CardFooter>
         <BackButton 
           label={backButtonLabel}
           href={backButtonHref}
         />
       </CardFooter>
+      
     </Card>
   )
 }

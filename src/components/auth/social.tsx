@@ -20,6 +20,7 @@ export function Social() {
 
   return (
     <div className="flex items-center w-full gap-2">
+
       <Button 
         size="lg"
         variant="outline"
@@ -28,6 +29,7 @@ export function Social() {
       >
         <FcGoogle className="size-5" />
       </Button>
+
       <Button 
         size="lg"
         variant="outline"
@@ -36,6 +38,7 @@ export function Social() {
       >
         <FaGithub className="size-5" />
       </Button>
+      
     </div>
   )
 }

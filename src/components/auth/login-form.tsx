@@ -14,6 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+
 import { LoginSchema, loginSchema } from "@/schemas"
 import { FormError } from "@/components/form-error"
 import { FormSuccess } from "@/components/form-success"
@@ -23,8 +24,11 @@ import { login } from "@/actions/login"
 import Link from "next/link"
 
 export function LoginForm() {
+
   const searchParams = useSearchParams()
+
   const callbackUrl = searchParams.get('callbackUrl')
+
   const urlError = searchParams.get('error') === 'OAuthAccountNotLinked'
     ? 'Email already in use with different provider!'
     : ''
@@ -46,25 +50,26 @@ export function LoginForm() {
     setError('')
     setSuccess('')
 
-    startTransition(() => {
-      login(values, callbackUrl)
-        .then((data) => {
-          if (data?.error) {
-            form.reset()
-            setError(data.error)
-          }
+    // startTransition(() => {
+    //   login(values, callbackUrl)
+    //     .then((data) => {
+    //       if (data?.error) {
+    //         form.reset()
+    //         setError(data.error)
+    //       }
 
-          if (data?.success) {
-            form.reset()
-            setSuccess(data?.success)
-          }
+    //       if (data?.success) {
+    //         form.reset()
+    //         setSuccess(data?.success)
+    //       }
 
-          if (data?.twoFactor) {
-            setShowTwoFactor(true)
-          }
-        })
-        .catch(() => setError('Something went wrong!'))
-    })
+    //       if (data?.twoFactor) {
+    //         setShowTwoFactor(true)
+    //       }
+    //     })
+    //     .catch(() => setError('Something went wrong!'))
+    // })
+
   }
 
   return (
@@ -74,10 +79,18 @@ export function LoginForm() {
       backButtonHref="/auth/register"
       showSocial 
     >
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onLoginSubmit)} className="space-y-6">
+        <form 
+        
+          onSubmit={
+            form.handleSubmit(onLoginSubmit)
+          } 
+          
+          className="space-y-6">
+
           <div className="space-y-4">
-            {showTwoFactor && (
+            {/* {showTwoFactor && (
               <FormField 
               control={form.control}
               name="code"
@@ -96,15 +109,18 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            )}
+            )} */}
+            
             {!showTwoFactor && (
               <>
+              
                 <FormField 
                   control={form.control}
                   name="email"
                   render={({field}) => (
                     <FormItem>
                       <FormLabel>Email</FormLabel>
+                      
                       <FormControl>
                         <Input
                           type="email"
@@ -113,10 +129,12 @@ export function LoginForm() {
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+
+                      {/* <FormMessage /> */}
                     </FormItem>
                   )}
                 />
+
                 <FormField 
                   control={form.control}
                   name="password"
@@ -131,25 +149,34 @@ export function LoginForm() {
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
+                      
                       <Button size="sm" variant="link" className="px-0 font-normal" asChild>
                         <Link href="/auth/reset">
                           Forgot password?
                         </Link>
                       </Button>
-                      <FormMessage />
+
+   
                     </FormItem>
                   )}
                 />
+
               </>
             )}
+
           </div>
+
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
+
           <Button type="submit" disabled={pending} className="w-full">
             {showTwoFactor ? 'Confirm' : 'Login'}
           </Button>
+
         </form>
       </Form>
+
     </CardWrapper>
   )
 }

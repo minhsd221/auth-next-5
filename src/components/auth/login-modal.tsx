@@ -14,7 +14,7 @@ interface LoginButtonProps {
   asChild?: boolean
 }
 
-export function LoginButton({
+export function LoginModal({
   children,
   asChild,
   mode = 'redirect',
@@ -28,12 +28,15 @@ export function LoginButton({
   if (mode === 'modal') {
     return (
       <Dialog>
+
         <DialogTrigger asChild>
           {children}
         </DialogTrigger>
+
         <DialogContent className="p-0 w-auto bg-transparent border-none">
           <LoginForm />
         </DialogContent>
+        
       </Dialog>
     )
   }
