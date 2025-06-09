@@ -1,38 +1,39 @@
-'use server'
+"use server";
 
-import { hash } from 'bcryptjs'
-import { db } from "@/lib/prisma"
-import { getUserByEmail } from "@/data/user"
-import { sendVerificationEmail } from "@/lib/mail"
-import { generateVerificationToken } from "@/data/tokens"
-import { registerSchema, RegisterSchema } from "@/schemas"
+import { hash } from "bcryptjs";
+import { db } from "@/lib/prisma";
+import { getUserByEmail } from "@/data/user";
+import { sendVerificationEmail } from "@/lib/mail";
+import { generateEmailVerificationToken } from "@/data/tokens";
+import { registerSchema, RegisterSchema } from "@/schemas";
 
 export async function register(values: RegisterSchema) {
-  const validatedFields = registerSchema.safeParse(values)
 
-  if (!validatedFields.success) {
-    return { error: 'Invalid fields!' }
-  }
+	const validatedFields = registerSchema.safeParse(values);
 
-  const { name, email, password } = validatedFields.data
-  const hashedPassword = await hash(password, 10)
+	if (!validatedFields.success) {
+	  return { error: 'Invalid fields!' }
+	}
 
-  const existingUser = await getUserByEmail(email)
+	const { name, email, password } = validatedFields.data
+	const hashedPassword = await hash(password, 10)
 
-  if (existingUser) {
-    return { error: 'Email already in use!' }
-  }
+	const existingUser = await getUserByEmail(email)
 
-  await db.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-    }
-  })
+	if (existingUser) {
+	  return { error: 'Email already in use!' }
+	}
 
-  const verificationToken = await generateVerificationToken(email)
-  await sendVerificationEmail(verificationToken.email, verificationToken.token)
+	await db.user.create({
+	  data: {
+	    name,
+	    email,
+	    password: hashedPassword,
+	  }
+	})
 
-  return { success: 'Confirmation email sent!' }
+	const verificationToken = await generateEmailVerificationToken(email)
+	await sendVerificationEmail(verificationToken.email, verificationToken.token)
+
+	return { success: 'Confirmation email sent!' }
 }

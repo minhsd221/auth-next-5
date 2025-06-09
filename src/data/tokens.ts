@@ -4,7 +4,7 @@ import { db } from "@/lib/prisma"
 import { getPasswordResetTokenByEmail } from "./password-reset-token"
 import { getTwoFactorTokenByEmail } from "./two-factor-token"
 
-export async function generateVerificationToken(email: string) {
+export async function generateEmailVerificationToken(email: string) {
   const token = randomUUID()
   const expires = new Date(new Date().getTime() + 3600 * 1000) // expires in 1 hour
 

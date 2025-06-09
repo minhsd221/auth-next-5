@@ -4,3 +4,7 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function beautifyLog(title: string, content: string) {
+  console.log(`\n🔹 ${title}\n${content}\n`);
+}

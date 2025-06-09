@@ -8,31 +8,32 @@ import Google from "next-auth/providers/google"
  
 export default {
   providers: [
-    Github({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }),
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    Credentials({
-      async authorize(credentials) {
-        const validatedFields = loginSchema.safeParse(credentials)
+    Github
+    // ({
+    //   clientId: process.env.GITHUB_CLIENT_ID,
+    //   clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    // }),
+    // Google({
+    //   clientId: process.env.GOOGLE_CLIENT_ID,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    // }),
+    // Credentials({
+    //   async authorize(credentials) {
+    //     const validatedFields = loginSchema.safeParse(credentials)
 
-        if (validatedFields.success) {
-          const { email, password } = validatedFields.data
+    //     if (validatedFields.success) {
+    //       const { email, password } = validatedFields.data
 
-          const user = await getUserByEmail(email)
-          if (!user || !user.password) return null
+    //       const user = await getUserByEmail(email)
+    //       if (!user || !user.password) return null
 
-          const isPassowordValid = await compare(password, user.password)
+    //       const isPassowordValid = await compare(password, user.password)
 
-          if (isPassowordValid) return user
-        }
+    //       if (isPassowordValid) return user
+    //     }
 
-        return null
-      } 
-    })
+    //     return null
+    //   } 
+    // })
   ]
 } satisfies NextAuthConfig

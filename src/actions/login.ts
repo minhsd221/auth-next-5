@@ -1,121 +1,120 @@
-'use server'
-import { AuthError } from "next-auth"
+"use server";
+import { AuthError } from "next-auth";
 
-import { signIn } from "@/auth"
-import { getUserByEmail } from "@/data/user"
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes"
-import { LoginSchema, loginSchema } from "@/schemas"
-import { 
-  sendVerificationEmail, 
-  sendTwoFactorTokenEmail,
-} from "@/lib/mail"
-import { 
-  generateVerificationToken, 
-  generateTwoFactorToken,
-} from "@/data/tokens"
-import { getTwoFactorTokenByEmail } from "@/data/two-factor-token"
-import { db } from "@/lib/prisma"
-import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation"
+import { signIn } from "@/auth";
+import { getUserByEmail as userGetUserByEmail } from "@/data/user";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { LoginSchema, loginSchema } from "@/schemas";
+import { sendVerificationEmail, sendTwoFactorTokenEmail } from "@/lib/mail";
+import {
+	generateEmailVerificationToken as userGenerateEmailVerificationToken,
+	generateTwoFactorToken,
+} from "@/data/tokens";
+import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
+import { db } from "@/lib/prisma";
+import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 
-export async function login(
-  values: LoginSchema,
-  callbackUrl?: string | null
-) {
-  const validatedFields = loginSchema.safeParse(values)
+export async function login(values: LoginSchema, callbackUrl?: string | null) {
+	console.log(values);
+	console.log(callbackUrl);
 
-  if (!validatedFields.success) {
-    return { error: 'Invalid fields!' }
-  }
+	const validatedFields = loginSchema.safeParse(values);
 
-  const { email, password, code } = validatedFields.data
+	if (!validatedFields.success) {
+		return { error: "Invalid fields!" };
+	}
 
-  const existingUser = await getUserByEmail(email)
+	const { email, password, code } = validatedFields.data;
 
-  // Check if email really exists 
-  if (!existingUser || !existingUser.email) {
-    return { error: 'Email does not exists!' }
-  }
+	const existingUser = await userGetUserByEmail(email);
 
-  // Check if user verified email
-  if (!existingUser.emailVerified) {
-    const verificationToken = await generateVerificationToken(
-      existingUser.email
-    )
+	if (!existingUser) {
+		return { error: "Email does not exists!" };
+	}
 
-    await sendVerificationEmail(verificationToken.email, verificationToken.token)
+	console.log("djawdklasdaw");
 
-    return { success: 'Confimation email sent!'}
-  }
+	// Check if user verified email
+	if (!existingUser.emailVerified) {
+		const verificationToken = await userGenerateEmailVerificationToken(
+			existingUser.email
+		);
 
-  // 2FA check
-  if (existingUser.isTwoFactorEnabled) {
-    if (code) {
-      const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email)
-      
-      if (!twoFactorToken) {
-        return { error: 'Invalid code!' }
-      }
+		await sendVerificationEmail(
+			verificationToken.email,
+			verificationToken.token
+		);
 
-      if (twoFactorToken.token !== code) {
-        return { error: 'Invalid code!' }
-      }
+		return { success: "Confimation email sent!" };
+	}
 
-      const hasExpired = new Date(twoFactorToken.expires) < new Date()
+	// 2FA check
+	// if (existingUser.isTwoFactorEnabled) {
+	//   if (code) {
+	//     const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email)
 
-      debugger
+	//     if (!twoFactorToken) {
+	//       return { error: 'Invalid code!' }
+	//     }
 
-      if (hasExpired) {
-        return { error: 'Code expired!' }
-      }
+	//     if (twoFactorToken.token !== code) {
+	//       return { error: 'Invalid code!' }
+	//     }
 
-      await db.twoFactorToken.delete({
-        where: {id: twoFactorToken.id }
-      })
+	//     const hasExpired = new Date(twoFactorToken.expires) < new Date()
 
-      const existingConfirmation = await getTwoFactorConfirmationByUserId(
-        existingUser.id
-      )
+	//     debugger
 
-      if (existingConfirmation) {
-        await db.twoFactorConfirmation.delete({
-          where: { id: existingConfirmation.id }
-        })
-      }
+	//     if (hasExpired) {
+	//       return { error: 'Code expired!' }
+	//     }
 
-      await db.twoFactorConfirmation.create({
-        data: {
-          userId: existingUser.id
-        }
-      })
-    } else {
-      const twoFactorToken = await generateTwoFactorToken(existingUser.email)
-      await sendTwoFactorTokenEmail(
-        twoFactorToken.email,
-        twoFactorToken.token,
-      )
-  
-      return { twoFactor: true }
-    }
-  }
+	//     await db.twoFactorToken.delete({
+	//       where: {id: twoFactorToken.id }
+	//     })
 
-  console.log(callbackUrl)
+	//     const existingConfirmation = await getTwoFactorConfirmationByUserId(
+	//       existingUser.id
+	//     )
 
-  try {
-    await signIn('credentials', {
-      email,
-      password,
-      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
-    })
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) { 
-        case 'CredentialsSignin':
-          return { error: 'Invalid credentials!' }
-        default:
-          return { error: 'Something went wrong.' }
-      }
-    }
-    
-    throw error
-  }
+	//     if (existingConfirmation) {
+	//       await db.twoFactorConfirmation.delete({
+	//         where: { id: existingConfirmation.id }
+	//       })
+	//     }
+
+	//     await db.twoFactorConfirmation.create({
+	//       data: {
+	//         userId: existingUser.id
+	//       }
+	//     })
+	//   } else {
+	//     const twoFactorToken = await generateTwoFactorToken(existingUser.email)
+	//     await sendTwoFactorTokenEmail(
+	//       twoFactorToken.email,
+	//       twoFactorToken.token,
+	//     )
+
+	//     return { twoFactor: true }
+	//   }
+	// }
+
+	try {
+	  await signIn('credentials', {
+	    email,
+	    password,
+	    redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+	  })
+	} catch (error) {
+	  if (error instanceof AuthError) {
+	    switch (error.type) {
+	      case 'CredentialsSignin':
+	        return { error: 'Invalid credentials!' }
+	      default:
+	        return { error: 'Something went wrong.' }
+	    }
+	  }
+
+	  throw error
+	}
 }

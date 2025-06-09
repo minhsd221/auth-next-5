@@ -1,6 +1,6 @@
 'use server'
 
-import { generateVerificationToken } from "@/data/tokens";
+import { generateEmailVerificationToken } from "@/data/tokens";
 import { getUserByEmail, getUserById } from "@/data/user";
 import { currentUser } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/mail";
@@ -35,7 +35,7 @@ export async function settings(values: SettingsSchema) {
       return { error: 'Email already in use!' }
     }
 
-    const verificationToken = await generateVerificationToken(values.email)
+    const verificationToken = await generateEmailVerificationToken(values.email)
 
     await sendVerificationEmail(verificationToken.email, verificationToken.token)
 
